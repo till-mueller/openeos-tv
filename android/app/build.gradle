@@ -45,11 +45,30 @@ android {
             signingConfig signingConfigs.debug
         }
         release {
-            signingConfig signingConfigs.debug
+            // Was hardcoded to signingConfigs.debug regardless of whether a
+            // real release keystore was configured above — every "release"
+            // build (including tagged GitHub releases) shipped signed with
+            // the throwaway debug key, password 'android'/'android'. Now
+            // uses the real release config when it's actually configured,
+            // and falls back to debug signing (loudly, see below) only when
+            // it isn't — e.g. a contributor building locally without the
+            // upload keystore.
+            signingConfig project.hasProperty('OPENEOS_UPLOAD_STORE_FILE') ? signingConfigs.release : signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+}
+
+if (!project.hasProperty('OPENEOS_UPLOAD_STORE_FILE')) {
+    logger.warn(
+        'WARNING: OPENEOS_UPLOAD_STORE_FILE is not set — the "release" build ' +
+        'type will be signed with the DEBUG keystore (password android/android). ' +
+        'This APK is not suitable for distribution. Set OPENEOS_UPLOAD_STORE_FILE, ' +
+        'OPENEOS_UPLOAD_STORE_PASSWORD, OPENEOS_UPLOAD_KEY_ALIAS, and ' +
+        'OPENEOS_UPLOAD_KEY_PASSWORD (e.g. in ~/.gradle/gradle.properties or as ' +
+        'CI secrets) to sign with the real release key.'
+    )
 }
 
 dependencies {

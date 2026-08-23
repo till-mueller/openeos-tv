@@ -77,9 +77,32 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
 
+      # Optional: use the real release keystore when it's configured as a
+      # repo secret. Without ANDROID_KEYSTORE_BASE64 set, this step is a
+      # no-op and assembleRelease falls back to debug signing (see the
+      # loud warning that produces in build.gradle) — same behavior as
+      # before this workflow had any release-signing support at all, just
+      # no longer silent about it.
+      - name: Decode release keystore
+        if: secrets.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/release.keystore
+
       - name: Build Release APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            ./gradlew assembleRelease --no-daemon \
+              -POPENEOS_UPLOAD_STORE_FILE=release.keystore \
+              -POPENEOS_UPLOAD_STORE_PASSWORD="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+              -POPENEOS_UPLOAD_KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}" \
+              -POPENEOS_UPLOAD_KEY_PASSWORD="${{ secrets.ANDROID_KEY_PASSWORD }}"
+          else
+            ./gradlew assembleRelease --no-daemon
+          fi
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
