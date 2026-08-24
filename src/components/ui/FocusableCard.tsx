@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Pressable, View, StyleSheet, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation';
 import { useTheme } from '@/hooks/useTheme';
 import { TV_SIZES } from '@/constants';
@@ -8,7 +8,12 @@ interface FocusableCardProps {
   children: React.ReactNode;
   onPress?: () => void;
   focusKey?: string;
-  style?: ViewStyle;
+  // StyleProp<ViewStyle>, not a bare ViewStyle: every call site passes an
+  // array of style objects (e.g. [styles.card, { borderLeftColor: ... }]),
+  // which is the normal RN pattern — a bare ViewStyle type only happened to
+  // accept that by accident until ViewStyle gained a same-named `filter`
+  // property (CSS filter effects) that collided with Array.prototype.filter.
+  style?: StyleProp<ViewStyle>;
   disabled?: boolean;
   selected?: boolean;
 }
