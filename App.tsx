@@ -14,6 +14,9 @@ import { useTheme } from '@/hooks/useTheme';
 import { useHeartbeat } from '@/hooks/useHeartbeat';
 import { useDeviceSocket } from '@/hooks/useDeviceSocket';
 
+// Import components
+import { ErrorBoundary } from '@/components/common';
+
 // Import stores
 import { useDeviceStore } from '@/stores';
 
@@ -146,11 +149,13 @@ const NavigationContent: React.FC = () => {
 // Main App component
 const App: React.FC = () => {
   return (
-    <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
-        <NavigationContent />
-      </QueryClientProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <NavigationContent />
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 };
 
