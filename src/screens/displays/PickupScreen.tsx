@@ -51,11 +51,11 @@ export const PickupScreen: React.FC = () => {
           {t('delivery.tableNumber', { number: order.tableNumber })}
         </TVText>
       )}
-      {order.customerName && (
-        <TVText variant="bodyLarge" style={{ color: 'rgba(255,255,255,0.8)' }}>
-          {order.customerName}
-        </TVText>
-      )}
+      {/* No customer name here on purpose — this board is read by everyone
+          in the venue, not just the customer it belongs to. The order
+          number above (which the customer already has from their receipt)
+          is enough to identify a pickup without putting a name on a public
+          screen. */}
     </View>
   );
 
